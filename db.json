@@ -1,7 +1,5 @@
 {
-  "users":{
-    "count":3,
-    "results":[
+  "users":[
     {
       "id":1,
       "username":"titanux",
