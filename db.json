@@ -1,0 +1,22 @@
+{
+  "users":{
+    "count": 3,
+    "results":[
+    {
+      "id":1,
+      "username": botA
+      "deck":[1,25,36,544,87]
+    },
+  {
+      "id":2,
+      "username": botB
+      "deck":[11,252,364,54,8]
+    },
+  {
+      "id":3,
+      "username": botC
+      "deck":[17,5,39,514,333]
+    },
+   ]
+  }
+}
