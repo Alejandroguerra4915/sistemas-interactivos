@@ -15,6 +15,11 @@
       "username":"jaklag",
       "deck":[17,5,39,514,333]
     }
-   ]
- }
-
+   ],
+  "cards":[
+    {
+      "id":1,
+      "class":"common"
+    }
+  ]
+}
