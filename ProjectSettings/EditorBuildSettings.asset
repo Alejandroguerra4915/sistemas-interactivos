@@ -6,6 +6,9 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/SampleScene.unity
-    guid: 99c9720ab356a0642a771bea13969a05
+    path: Assets/EndlessSpacePilot/Scenes/Menu.unity
+    guid: 9aec1bb33b5eaa44085ee0b50c20d16b
+  - enabled: 1
+    path: Assets/EndlessSpacePilot/Scenes/Game.unity
+    guid: efc2dfe7d053bfd48b7b734fe9ac16c2
   m_configObjects: {}
