@@ -7,7 +7,7 @@ using System.Linq;
 
 public class handler : MonoBehaviour
 {
-   
+    
     public TMP_Text puntajesText;
     string url = "https://sid-restapi.onrender.com";
     public string Token { get; private set; }
@@ -124,8 +124,11 @@ public class handler : MonoBehaviour
 
                 string puntajesInfo = "";
 
-                foreach (var usuario in response.usuarios)
+                int count = Mathf.Min(5, response.usuarios.Count); 
+
+                for (int i = 0; i < count; i++)
                 {
+                    var usuario = response.usuarios[i];
                     puntajesInfo += "El usuario " + usuario.username + " tiene un puntaje de " + usuario.data.score + "\n";
                 }
 
