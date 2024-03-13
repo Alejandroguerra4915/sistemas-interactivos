@@ -4,14 +4,15 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.Networking;
 using System.Linq;
+using UnityEngine.SceneManagement;
 
 public class handler : MonoBehaviour
 {
-    
     public TMP_Text puntajesText;
     string url = "https://sid-restapi.onrender.com";
     public string Token { get; private set; }
     public string Username { get; private set; }
+    public GameObject panelAuth;
 
     void Start()
     {
@@ -20,12 +21,13 @@ public class handler : MonoBehaviour
         if (string.IsNullOrEmpty(Token))
         {
             Debug.Log("No hay Token");
-            //PanelAuth.SetActive(true);
+            panelAuth.SetActive(true);
         }
         else
         {
             Username = PlayerPrefs.GetString("username");
-            StartCoroutine("GetProfile");
+            StartCoroutine(GetProfile());
+            panelAuth.SetActive(false); // Oculta el panel si el token está presente
         }
     }
 
@@ -43,6 +45,17 @@ public class handler : MonoBehaviour
         string password = GameObject.Find("InputFieldPassword").GetComponent<TMP_InputField>().text;
 
         StartCoroutine(Login(JsonUtility.ToJson(new AuthenticationData { username = username, password = password })));
+    }
+
+    public void CerrarSesion()
+    {
+        PlayerPrefs.DeleteKey("token");
+        panelAuth.SetActive(true);
+    }
+
+    public void ActualizarPuntaje(int newScore)
+    {
+        StartCoroutine(UpdateScore(newScore));
     }
 
     IEnumerator Registro(string json)
@@ -122,6 +135,8 @@ public class handler : MonoBehaviour
             {
                 AuthResponse response = JsonUtility.FromJson<AuthResponse>(request.downloadHandler.text);
 
+                response.usuarios = response.usuarios.OrderByDescending(u => u.data.score).ToList();
+
                 string puntajesInfo = "";
 
                 int count = Mathf.Min(5, response.usuarios.Count); 
@@ -132,7 +147,6 @@ public class handler : MonoBehaviour
                     puntajesInfo += "El usuario " + usuario.username + " tiene un puntaje de " + usuario.data.score + "\n";
                 }
 
-                
                 puntajesText.text = puntajesInfo;
             }
             else
@@ -142,17 +156,34 @@ public class handler : MonoBehaviour
         }
     }
 
-    IEnumerator Highscore(string json)
+
+    IEnumerator UpdateScore(int newScore)
     {
-        UnityWebRequest request = UnityWebRequest.Put(url + "/api/usuarios", json);
+        DataUser newData = new DataUser();
+        newData.score = newScore;
+        string json = JsonUtility.ToJson(newData);
+
+        UnityWebRequest request = UnityWebRequest.Put(url + "/api/usuarios/" + Username, json);
         request.method = "PATCH";
         request.SetRequestHeader("Content-Type", "application/json");
         request.SetRequestHeader("x-token", Token);
-
         yield return request.SendWebRequest();
+
         if (request.result == UnityWebRequest.Result.ConnectionError)
         {
             Debug.Log(request.error);
+        }
+        else
+        {
+            if (request.responseCode == 200)
+            {
+                Debug.Log("Puntaje actualizado con éxito");
+                StartCoroutine(GetProfile()); // Actualizar la lista de puntajes después de actualizar el puntaje del usuario
+            }
+            else
+            {
+                Debug.Log("Error al actualizar puntaje");
+            }
         }
     }
 

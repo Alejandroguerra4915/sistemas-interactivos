@@ -1,68 +1,94 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
-using UnityEngine.SceneManagement;
+using UnityEngine.Networking;
 
 namespace EndlessSpacePilot
 {
-	public class GameoverManager : MonoBehaviour
-	{
-		///***********************************************************************
-		/// GameOver Manager Class. 
-		///***********************************************************************
-
-		public static GameoverManager instance;
-		public Text scoreText;            //reference to score gameobject to modify its text
-		public AudioClip menuTap;
+    public class GameoverManager : MonoBehaviour
+    {
+        public static GameoverManager instance;
+        public Text scoreText;           
+        public string url = "https://sid-restapi.onrender.com/api/usuarios"; 
 
         private void Awake()
         {
-			instance = this;
+            instance = this;
         }
 
         private void Start()
         {
-			//SaveScore();
-		}
+            
+            if (!PlayerPrefs.HasKey("Token") || !PlayerPrefs.HasKey("username"))
+            {
+                Debug.LogWarning("Token o nombre de usuario no encontrados en PlayerPrefs.");
+                return;
+            }
+        }
 
         void Update()
-		{
-			//Set the new score on the screen
-			scoreText.text = PlayerManager.playerScore.ToString();
-		}
+        {
+           
+            scoreText.text = PlayerManager.playerScore.ToString();
+        }
 
+        /// <summary>
+     
+        /// </summary>
+        public void SaveScore()
+        {
+            StartCoroutine(SendScore(PlayerPrefs.GetString("username"), PlayerManager.playerScore));
+        }
 
-		///***********************************************************************
-		/// Save player score
-		///***********************************************************************
-		public void SaveScore()
-		{
-			print("<b>Score Saved!</b>");
+       
 
-			//immediately save the last score
-			PlayerPrefs.SetInt("lastScore", PlayerManager.playerScore);
-			//check if this new score is higher than saved bestScore.
-			//if so, save this new score into playerPrefs. otherwise keep the last bestScore intact.
-			int lastBestScore;
-			lastBestScore = PlayerPrefs.GetInt("bestScore");
-			if (PlayerManager.playerScore > lastBestScore)
+		IEnumerator SendScore(string username, int score)
 			{
-              PlayerPrefs.SetInt("bestScore", PlayerManager.playerScore);
-			  //GetComponent<ScoreManager>().ActualizarScore(PlayerManager.playerScore);
-			}
 				
-		}
+				string fullUrl = url + "/api/usuarios/" + username + "/score";
 
+				DataUser newData = new DataUser();
+				newData.username = username;
+				newData.score = score;
 
-		///***********************************************************************
-		/// IPlay audioclip
-		///***********************************************************************
-		void playSfx(AudioClip _sfx)
-		{
-			GetComponent<AudioSource>().clip = _sfx;
-			if (!GetComponent<AudioSource>().isPlaying)
-				GetComponent<AudioSource>().Play();
-		}
+				string json = JsonUtility.ToJson(newData);
 
+				using (UnityWebRequest request = UnityWebRequest.Put(fullUrl, json))
+            {
+                request.method = "PATCH";
+                request.SetRequestHeader("Content-Type", "application/json");
+                request.SetRequestHeader("x-token", PlayerPrefs.GetString("token"));
+
+                
+                yield return request.SendWebRequest();
+
+               
+                if (request.result == UnityWebRequest.Result.ConnectionError)
+                {
+                    Debug.LogError("Error de conexión al enviar el puntaje: " + request.error);
+                }
+                else
+                {
+                    if (request.responseCode == 200)
+                    {
+                        Debug.Log("Puntaje actualizado con éxito");
+                    }
+                    else
+                    {
+                        Debug.LogError("Error al actualizar puntaje - Código de respuesta: " + request.responseCode);
+                        Debug.LogError("Mensaje de error: " + request.downloadHandler.text);
+                    }
+                }
+            }
+        }
+    }
+
+    
+    [System.Serializable]
+	public class DataUser
+	{
+		public string username;
+		public int score;
 	}
+
 }
