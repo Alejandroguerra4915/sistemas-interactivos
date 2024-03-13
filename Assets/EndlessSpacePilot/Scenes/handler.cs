@@ -109,6 +109,9 @@ public class handler : MonoBehaviour
                 PlayerPrefs.SetString("username", Username);
 
                 Debug.Log(data.token);
+
+            
+                panelAuth.SetActive(false);
             }
             else
             {
@@ -116,6 +119,7 @@ public class handler : MonoBehaviour
             }
         }
     }
+
 
     IEnumerator GetProfile()
     {
